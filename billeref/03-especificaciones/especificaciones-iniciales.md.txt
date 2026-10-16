@@ -1,0 +1,115 @@
+# Especificaciones iniciales · Billetera móvil "BilleRef"
+**Curso DS-HET-103 · Tarea final · Insumo para escribir las historias de usuario**
+
+Este documento es el punto de partida. No son historias ni especificaciones técnicas: con él ustedes escriben los ADR, las historias, las especificaciones y el plan de pruebas. Si algo no está definido aquí, decídanlo y regístrenlo como supuesto o como ADR.
+
+Todos los datos son **ficticios**. No usen datos, sistemas ni código del banco.
+
+---
+
+## 1. Objetivo
+Construir una billetera móvil que permita a sus usuarios hacer solo dos cosas:
+
+1. **Transferir dinero a terceros**, es decir, a otros usuarios de la billetera.
+2. **Pagar servicios básicos**: luz, agua e internet.
+
+Además, la billetera muestra el saldo y el historial de esas operaciones.
+
+## 2. Actores
+- **Usuario de la billetera:** persona registrada con saldo en bolivianos (Bs).
+- **Empresas de servicios (simuladas):** informan la deuda de un cliente y reciben el pago.
+
+## 3. Alcance funcional
+
+### 3.1 Acceso
+- El usuario entra con su número de celular y un PIN de 4 dígitos.
+- Tres intentos fallidos seguidos bloquean el acceso durante 5 minutos.
+- La sesión se cierra tras 5 minutos sin actividad.
+- El PIN nunca se muestra ni se guarda en texto plano, y nunca aparece en logs.
+
+### 3.2 Inicio: saldo y últimos movimientos
+- Muestra el nombre del usuario, su saldo disponible y sus 5 últimos movimientos.
+
+### 3.3 Transferencia a terceros
+- El destinatario se identifica por su número de celular y debe ser otro usuario activo de la billetera.
+- Antes de confirmar, se muestra el nombre del destinatario parcialmente enmascarado (por ejemplo "Ana F\*\*\* R\*\*\*"), el monto y la glosa.
+- El usuario confirma con su PIN.
+
+**Reglas:**
+
+- El monto debe ser mayor a Bs 0 y tener como máximo 2 decimales.
+- El monto máximo por transferencia es de **Bs 3.000**.
+- El total transferido en el día no puede superar **Bs 10.000**.
+- El monto no puede ser mayor al saldo disponible.
+- No se puede transferir a uno mismo.
+- La glosa es opcional, con un máximo de 60 caracteres.
+- Una transferencia confirmada no se puede duplicar por un doble envío: la misma solicitud reenviada no genera un segundo débito.
+
+**Resultado:** un comprobante con número de operación, fecha y hora, destinatario, monto y saldo resultante. La operación se refleja en el saldo y en el historial de ambos usuarios.
+
+### 3.4 Pago de servicios
+- El usuario elige el tipo de servicio (luz, agua o internet), luego la empresa, y escribe su código de cliente.
+- El sistema consulta las deudas pendientes del código: periodo, monto y fecha de vencimiento.
+- El usuario elige **una** deuda y la paga por el **monto total**: no hay pagos parciales.
+- Confirma con su PIN.
+
+**Reglas:**
+
+- El código de cliente debe existir en la empresa elegida.
+- Una deuda ya pagada no se puede volver a pagar.
+- Si hay varias deudas, solo se puede pagar la más antigua primero.
+- Comisión fija de **Bs 1,00** por pago, que se muestra antes de confirmar.
+- El saldo debe cubrir el monto más la comisión.
+
+**Resultado:** un comprobante con número de operación, empresa, código de cliente, periodo, monto, comisión y saldo resultante.
+
+### 3.5 Historial
+- Lista las transferencias enviadas y recibidas y los pagos de servicios, del más reciente al más antiguo.
+- Se puede filtrar por tipo de operación y por rango de fechas.
+- Desde cada operación se puede ver su comprobante.
+
+## 4. Datos semilla (ficticios)
+
+### Usuarios
+
+| Celular | Nombre | PIN | Saldo inicial | Estado |
+|---|---|---|---|---|
+| 70000001 | Ana Ficticia Rojas | 1111 | Bs 5.000,00 | Activo |
+| 70000002 | Bruno Ejemplo Mamani | 2222 | Bs 800,00 | Activo |
+| 70000003 | Carla Prueba Quispe | 3333 | Bs 0,00 | Activo |
+| 70000004 | Diego Demo Vargas | 4444 | Bs 1.200,00 | Bloqueado |
+
+### Empresas de servicios y deudas
+
+| Servicio | Empresa | Código de cliente | Periodo | Monto | Vence |
+|---|---|---|---|---|---|
+| Luz | Luz del Valle S.A. (ficticia) | LV-1001 | 2026-08 | Bs 185,40 | 2026-09-15 |
+| Luz | Luz del Valle S.A. (ficticia) | LV-1001 | 2026-09 | Bs 172,10 | 2026-10-15 |
+| Agua | Aguas Claras (ficticia) | AC-2002 | 2026-09 | Bs 64,00 | 2026-10-20 |
+| Internet | NetAndes (ficticia) | NA-3003 | 2026-10 | Bs 249,00 | 2026-10-25 |
+| Internet | NetAndes (ficticia) | NA-3004 | — sin deudas — | — | — |
+
+## 5. Requisitos no funcionales mínimos
+- **Stack libre**, pero se justifica en un ADR.
+- **Interfaz móvil:** se recomienda una web móvil (SPA o PWA), para poder probarla de punta a punta con el MCP de Playwright. Si eligen app nativa, expliquen en un ADR cómo la prueban.
+- **Integraciones simuladas:** las empresas de servicios y las notificaciones se simulan (mock, archivo JSON o API falsa).
+- **Base de datos opcional:** pueden usar memoria o archivos. Si usan SQL Server, apliquen el estándar BCP visto en el curso.
+- **Seguridad:**
+    - Nada de secretos en el repositorio.
+    - El PIN va con hash.
+    - Los logs no incluyen PIN, saldos completos ni números de celular completos.
+- **Consistencia:**
+    - El débito y el registro de una operación ocurren juntos o no ocurren.
+    - Montos con 2 decimales, sin errores de redondeo.
+- **Fechas:** en hora de Bolivia (UTC−4).
+
+## 6. Fuera de alcance
+- Registro de nuevos usuarios, KYC y recuperación de PIN.
+- Recargas de saldo, QR, pagos internacionales y otros servicios.
+- Integración con bancos o empresas reales y notificaciones push reales.
+
+## 7. Preguntas que deben resolver ustedes (y documentar)
+- ¿Cómo se calcula el "día" para el límite diario?
+- ¿Qué pasa si la consulta de deudas de la empresa falla o tarda?
+- ¿Cómo evitan el doble débito ante un reintento?
+- ¿Qué ve el usuario bloqueado (70000004) al intentar entrar?
