@@ -1,8 +1,8 @@
-# ADR-001 · Stack y arquitectura: Angular (web móvil/PWA) + .NET 8 Web API
+# ADR-001 · Stack y arquitectura: Angular (web móvil/PWA) + ASP.NET Core Web API
 
-- **Estado:** Aceptado
+- **Estado:** Aceptado · **versión de .NET reemplazada por [ADR-009](ADR-009-dotnet-10.md)** (.NET 10 LTS en lugar de .NET 8)
 - **Fecha:** 2026-10-15
-- **Relacionados:** ADR-002 a ADR-008
+- **Relacionados:** ADR-002 a ADR-009
 
 ## Contexto
 
@@ -11,7 +11,7 @@ La especificación deja el stack libre pero exige justificarlo (§5). Recomienda
 ## Decisión
 
 - **Frontend:** SPA en **Angular** (versión estable vigente) con TypeScript, diseño *mobile-first* y configurada como **PWA** (`@angular/pwa`) para instalarla en el celular. Se prueba en navegador con viewport móvil.
-- **Backend:** **ASP.NET Core Web API sobre .NET 8** (C#), API REST con JSON.
+- **Backend:** **ASP.NET Core Web API** (C#), API REST con JSON. Versión original: .NET 8; vigente: **.NET 10 LTS** (ADR-009).
 - **Arquitectura del backend** en capas dentro de una solución:
   - `BilleRef.Api` — controladores, middleware (autenticación, manejo de errores, logs), DTOs.
   - `BilleRef.Domain` — entidades (`Usuario`, `Operacion`, `Deuda`) y reglas de negocio (límites, validaciones de monto, glosa, enmascaramiento).
@@ -43,4 +43,4 @@ La especificación deja el stack libre pero exige justificarlo (§5). Recomienda
 
 - **Positivas:** tipado fuerte en ambos extremos; `decimal` nativo en C# para dinero (ADR-005); separación clara de reglas en `Domain`, fácil de probar con xUnit; la web móvil se prueba directamente con Playwright MCP.
 - **Negativas:** dos lenguajes (TypeScript y C#) y dos procesos que levantar (`ng serve` y `dotnet run`).
-- **Riesgo:** **.NET 8 termina su soporte (LTS) en noviembre de 2026.** Para un trabajo académico es aceptable; si el proyecto continúa, migrar a **.NET 10 (LTS)**, lo que no debería requerir cambios relevantes en este alcance.
+- **Riesgo (resuelto por ADR-009):** .NET 8 termina su soporte (LTS) en noviembre de 2026; antes de escribir código se decidió usar .NET 10 LTS.

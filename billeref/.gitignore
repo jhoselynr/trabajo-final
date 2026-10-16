@@ -1,0 +1,8 @@
+# Skills activadas como uniones de directorio hacia 06-skills/ (ver 06-skills/README.md)
+.claude/skills/
+
+# Configuración personal de Claude Code (la compartida es .claude/settings.json)
+.claude/settings.local.json
+
+# Archivos de salida sin nombre explícito del MCP de Playwright (ver 07-mcp/README.md)
+.playwright-mcp/

@@ -5,7 +5,7 @@ Formato: una decisión por archivo (Contexto · Decisión · Alternativas · Con
 
 | N.º | Título | Estado | Fecha |
 |---|---|---|---|
-| [ADR-001](ADR-001-stack-y-arquitectura.md) | Stack y arquitectura: Angular (web móvil/PWA) + .NET 8 Web API | Aceptado | 2026-10-15 |
+| [ADR-001](ADR-001-stack-y-arquitectura.md) | Stack y arquitectura: Angular (web móvil/PWA) + ASP.NET Core Web API | Aceptado (versión de .NET reemplazada por ADR-009) | 2026-10-15 |
 | [ADR-002](ADR-002-persistencia-en-memoria.md) | Persistencia en memoria con semilla JSON y atomicidad de operaciones | Aceptado | 2026-10-15 |
 | [ADR-003](ADR-003-autenticacion-pin-y-sesion.md) | Autenticación con PIN, bloqueo por intentos y sesión con JWT corto | Aceptado | 2026-10-15 |
 | [ADR-004](ADR-004-idempotencia.md) | Idempotencia de operaciones con `Idempotency-Key` | Aceptado | 2026-10-15 |
@@ -13,8 +13,9 @@ Formato: una decisión por archivo (Contexto · Decisión · Alternativas · Con
 | [ADR-006](ADR-006-integracion-empresas-de-servicios.md) | Integración simulada con empresas de servicios: timeout y reintento | Aceptado | 2026-10-15 |
 | [ADR-007](ADR-007-logs-y-datos-sensibles.md) | Logs y enmascaramiento de datos sensibles | Aceptado | 2026-10-15 |
 | [ADR-008](ADR-008-estrategia-de-pruebas.md) | Estrategia de pruebas: xUnit + Jest + Playwright MCP | Aceptado | 2026-10-15 |
+| [ADR-009](ADR-009-dotnet-10.md) | Backend en .NET 10 LTS con solución `.slnx` | Aceptado | 2026-10-15 |
 
-> **Revisión de consistencia (2026-10-15):** se revisaron los 8 ADR entre sí para usarlos como base de generación de código. Si dos textos parecen chocar, manda el ADR más específico del tema (p. ej. el orden de procesamiento está en ADR-002 y la idempotencia en ADR-004).
+> **Revisión de consistencia (2026-10-15):** se revisaron los ADR entre sí para usarlos como base de generación de código. Si dos textos parecen chocar, manda el ADR más específico del tema (p. ej. el orden de procesamiento está en ADR-002 y la idempotencia en ADR-004).
 
 ## Respuestas a las preguntas de la sección 7
 

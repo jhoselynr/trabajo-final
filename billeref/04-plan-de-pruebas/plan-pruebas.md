@@ -105,11 +105,11 @@ Se cargan con un *builder* de escenario que escribe directamente en el store en 
 | Elemento | Valor |
 |---|---|
 | Sistema operativo | Windows 11 (cualquier SO con las mismas versiones sirve) |
-| Backend | .NET 8 SDK; `ASPNETCORE_ENVIRONMENT=Development`; HTTPS con el certificado de desarrollo (`dotnet dev-certs https --trust`) |
+| Backend | SDK de .NET 10 (10.0.300, fijado en `global.json`); `ASPNETCORE_ENVIRONMENT=Development`; HTTPS con el certificado de desarrollo (`dotnet dev-certs https --trust`) |
 | Clave JWT | `dotnet user-secrets set "Jwt:Key" "<clave de 32+ bytes>"` en el proyecto `BilleRef.Api` (nunca en el repositorio) |
 | Configuración E2E | `Servicios__TimeoutSegundos=2` (variable de entorno) para no esperar 20 s en HU-12 |
 | Frontend | Node.js LTS, Angular CLI; `ng serve` con `proxy.conf.json` hacia la API |
-| Navegador E2E | Chromium controlado por el MCP de Playwright; viewport 390×844; zona horaria del navegador `America/La_Paz` |
+| Navegador E2E | Google Chrome (Chromium) controlado por `@playwright/mcp@0.0.83`; viewport 390×844 táctil; zona horaria `America/La_Paz`; perfil aislado. Configuración en [`07-mcp/`](../07-mcp/README.md) |
 | Reloj | Backend: `FakeTimeProvider` en pruebas unitarias y API. Frontend: `jest.useFakeTimers()` y `page.clock` de Playwright |
 | Endpoints de prueba | `POST /api/test/reset` y `POST /api/test/empresas/comportamiento` (solo `Development`) |
 | Reportes | xUnit → `.trx` + HTML; Jest → JUnit XML; cobertura con `coverlet` |
@@ -143,7 +143,7 @@ ng serve
 4. E2E completa.
 5. Verificaciones no funcionales NF-01 a NF-06.
 
-Cada caso se registra en la matriz con su resultado (Aprobado / Fallido / Bloqueado) y la ruta de su evidencia.
+Cada caso se registra en `08-evidencias/reporte-ejecucion.md` con su resultado (Aprobado / Fallido / Bloqueado), la ruta de su evidencia y, si falla, su defecto. La matriz no se edita al ejecutar: es el plan; el reporte es lo ejecutado. Procedimiento en la skill `billeref-testing` (`06-skills/billeref-testing/referencias/reporte-evidencias.md`).
 
 ## 8. Gestión de defectos
 
@@ -168,7 +168,7 @@ Se da por terminada la fase de pruebas cuando se cumplen **todos**:
 
 ## 10. Evidencias
 
-Ruta: `08-evidencias/<TC-ID>/`.
+Ruta: `08-evidencias/<TC-ID>/`, registradas en `08-evidencias/reporte-ejecucion.md` (plantilla en `06-skills/billeref-testing/plantillas/`).
 
 | Tipo de prueba | Evidencia |
 |---|---|
@@ -185,4 +185,3 @@ Ruta: `08-evidencias/<TC-ID>/`.
 | Pruebas de concurrencia inestables | Repetir 20 veces cada caso concurrente en la ejecución; un solo fallo es defecto Crítico |
 | E2E con Playwright MCP conducido por un agente, menos repetible que un script | Pasos fijos por caso en esta matriz, reset antes de cada caso y capturas obligatorias |
 | Fechas reales: la deuda 2026-09 pasa a "Vencida" después del 15/10/2026 | Los casos E2E no afirman "Vencida" sobre esa deuda; la regla se prueba en API con reloj falso |
-| .NET 8 sin soporte desde noviembre de 2026 (ADR-001) | Fuera del alcance del plan; anotado en el ADR |

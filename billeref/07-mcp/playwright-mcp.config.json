@@ -1,0 +1,23 @@
+{
+  "browser": {
+    "browserName": "chromium",
+    "isolated": true,
+    "launchOptions": {
+      "channel": "chrome",
+      "headless": false
+    },
+    "contextOptions": {
+      "viewport": { "width": 390, "height": 844 },
+      "isMobile": true,
+      "hasTouch": true,
+      "timezoneId": "America/La_Paz",
+      "locale": "es-BO"
+    }
+  },
+  "outputDir": ".playwright-mcp",
+  "console": { "level": "warning" },
+  "timeouts": { "action": 5000, "navigation": 60000 },
+  "snapshot": { "mode": "full" },
+  "filePaths": "relative",
+  "codegen": "none"
+}
