@@ -12,7 +12,9 @@
 
 ### Montos
 - En el backend todos los montos son **`decimal`** de C# (nunca `double`/`float`).
-- En el JSON de la API los montos viajan como **cadena** con punto decimal (`"185.40"`) para que JavaScript no los convierta a coma flotante. En Angular se tratan como cadena o como enteros en centavos para validar; el cálculo de saldos solo lo hace el backend.
+- En el JSON de la API los montos viajan como **cadena** con punto decimal y sin separador de miles (`"185.40"`, `"3000"`), en solicitudes y respuestas, para que JavaScript no los convierta a coma flotante. Las respuestas siempre llevan 2 decimales (`"5000.00"`).
+- **En Angular** los montos se manejan como cadena; ningún cálculo de dinero se hace en el frontend (saldo resultante, total con comisión, disponible del día los calcula y devuelve el backend). El campo de monto acepta coma o punto como separador decimal (`150,50` o `150.50`), no acepta separador de miles, y se normaliza a punto antes de enviar.
+- **Formato válido** (backend y frontend): `^\d{1,7}([.]\d{1,2})?$` tras normalizar.
 - **Validación, no redondeo:** un monto con más de 2 decimales se **rechaza** ("El monto admite como máximo 2 decimales"); el sistema nunca redondea lo que ingresa el usuario.
 - El monto debe ser `> 0`. La comisión de pago es la constante `1.00m`.
 - **Presentación:** formato boliviano `Bs 1.234,50` (punto de miles, coma decimal), con `es-BO` en Angular.
@@ -38,5 +40,5 @@
 ## Consecuencias
 
 - **Positivas:** aritmética exacta; regla de límite diaria predecible; pruebas deterministas gracias a `TimeProvider`.
-- **Negativas:** los montos como cadena exigen conversión explícita en el cliente.
+- **Negativas:** los montos como cadena exigen conversión explícita (en C#, `decimal.Parse` con `CultureInfo.InvariantCulture`).
 - **Casos de prueba derivados:** transferencia a las 23:59 y a las 00:00 de Bolivia; acumulado exacto de Bs 10.000; montos `0`, `0.001`, `3000.00`, `3000.01`.

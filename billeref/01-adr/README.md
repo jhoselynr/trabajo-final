@@ -14,6 +14,8 @@ Formato: una decisión por archivo (Contexto · Decisión · Alternativas · Con
 | [ADR-007](ADR-007-logs-y-datos-sensibles.md) | Logs y enmascaramiento de datos sensibles | Aceptado | 2026-10-15 |
 | [ADR-008](ADR-008-estrategia-de-pruebas.md) | Estrategia de pruebas: xUnit + Jest + Playwright MCP | Aceptado | 2026-10-15 |
 
+> **Revisión de consistencia (2026-10-15):** se revisaron los 8 ADR entre sí para usarlos como base de generación de código. Si dos textos parecen chocar, manda el ADR más específico del tema (p. ej. el orden de procesamiento está en ADR-002 y la idempotencia en ADR-004).
+
 ## Respuestas a las preguntas de la sección 7
 
 | Pregunta | Respuesta | ADR |

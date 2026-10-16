@@ -12,17 +12,18 @@
 
 | Nivel | Herramienta | Qué cubre |
 |---|---|---|
-| Unitarias backend | **xUnit** (+ FluentAssertions) | Reglas de `BilleRef.Domain`: montos, decimales, límites, glosa, enmascaramiento, deuda más antigua, cálculo del día con `FakeTimeProvider`. |
+| Unitarias backend | **xUnit** (aserciones nativas `Assert`; no FluentAssertions, que desde la v8 tiene licencia comercial) | Reglas de `BilleRef.Domain`: montos, decimales, límites, glosa, enmascaramiento, deuda más antigua, cálculo del día con `FakeTimeProvider`. |
 | Integración backend | **xUnit + `WebApplicationFactory`** | Endpoints reales con el store en memoria: login, bloqueo, transferencias, pagos, idempotencia, `503` del mock de empresas, ausencia de datos sensibles en logs. |
 | Unitarias frontend | **Jest** (`jest-preset-angular`) | Componentes y servicios Angular: validaciones de formulario, *interceptor* de renovación del JWT, temporizador de inactividad, formato `Bs 1.234,50`. |
 | Punta a punta | **Playwright vía MCP** | Flujos completos en viewport móvil (p. ej. 390×844) contra frontend y backend levantados. |
 
 - **Datos de prueba:** la semilla de §4. Antes de cada escenario E2E se llama a `POST /api/test/reset` (solo `Development`, ADR-002) para partir del estado inicial.
+- **Empresa que no responde:** se simula con `POST /api/test/empresas/comportamiento` (modo `LENTO` o `FALLA`, ADR-006). Para E2E se levanta el backend con `Servicios:TimeoutSegundos` reducido (p. ej. 2), y así no se esperan 20 s reales.
 - **Escenarios E2E mínimos:**
   1. Login exitoso (70000001) y vista de inicio con nombre, saldo y 5 últimos movimientos.
   2. 3 PIN incorrectos → bloqueo de 5 minutos.
   3. Login del usuario bloqueado 70000004 (PIN correcto e incorrecto).
-  4. Transferencia exitosa Ana → Bruno y reflejo en el historial de ambos.
+  4. Transferencia exitosa Ana → Bruno y reflejo en el historial de ambos; el comprobante visto por Bruno muestra su propio saldo, no el de Ana.
   5. Transferencias rechazadas: monto > Bs 3.000, saldo insuficiente (Carla), a uno mismo, a usuario bloqueado.
   6. Doble envío de la misma confirmación → un solo débito.
   7. Pago de LV-1001: solo se habilita 2026-08; luego 2026-09.
@@ -40,5 +41,5 @@
 ## Consecuencias
 
 - **Positivas:** las reglas críticas se prueban en el nivel más barato (xUnit) y los flujos en E2E; el reset y `TimeProvider` hacen las pruebas deterministas.
-- **Negativas:** Jest requiere configuración adicional en Angular (`jest-preset-angular` o el *builder* de Jest), que debe fijarse en la versión de Angular elegida.
+- **Negativas:** Jest no es el ejecutor por defecto de Angular (las versiones recientes usan Vitest), así que se configura con **`jest-preset-angular`**, no con el *builder* experimental de Jest de Angular CLI (está en desuso). La versión de `jest-preset-angular` debe ser compatible con la versión de Angular instalada.
 - Las pruebas de bloqueo por 5 minutos e inactividad usan relojes falsos (backend: `FakeTimeProvider`; frontend: `jest.useFakeTimers()` / `page.clock` de Playwright) para no esperar tiempo real.

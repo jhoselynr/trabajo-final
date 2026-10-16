@@ -21,7 +21,8 @@
   - código de cliente de servicios: solo prefijo y 2 últimos caracteres → `LV-**01`.
 - **Sí se registra:** número de operación, tipo, monto de la operación, resultado (éxito o código de error de negocio), `sid` de la sesión y un `traceId` de correlación.
 - Las funciones de enmascaramiento viven en `BilleRef.Domain` (`Mascaras.Celular()`, `Mascaras.Nombre()`, `Mascaras.CodigoCliente()`) y se usan en todo el código; está prohibido interpolar valores sensibles directamente en los mensajes del log.
-- El *logging* de solicitudes HTTP de ASP.NET (`UseHttpLogging`) **no** registra cuerpos ni la cabecera `Authorization`.
+- **No se usa `UseHttpLogging`.** La categoría `Microsoft.AspNetCore` queda en nivel `Warning` en `appsettings.json`, para que ASP.NET no escriba las URLs de cada solicitud. Como refuerzo, ningún dato sensible viaja en la URL (ADR-001).
+- Nunca se registran las cabeceras `Authorization`, `X-Renewed-Token` ni `Idempotency-Key`.
 - Los errores no controlados devuelven al cliente un mensaje genérico y un `traceId`, nunca la traza de la excepción.
 - `.gitignore` excluye `appsettings.*.local.json`, `.env` y `secrets.json`; los secretos se manejan según ADR-003.
 

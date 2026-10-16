@@ -12,16 +12,20 @@ La base de datos es opcional (§5): se puede usar memoria o archivos. A la vez s
 
 - **Almacenamiento en memoria** del proceso del backend (colecciones dentro de un `InMemoryStore` registrado como *singleton*).
 - **Semilla JSON** versionada en `BilleRef.Infrastructure/Seed/`:
-  - `usuarios.json` — celular, nombre, **hash del PIN** (nunca el PIN en claro, ver ADR-003), saldo inicial, estado.
-  - `empresas.json` — servicios, empresas, códigos de cliente y deudas.
+  - `usuarios.json` — **id interno** (GUID fijo, usado como `sub` del JWT en ADR-003), celular, nombre, **hash del PIN** (nunca el PIN en claro, ver ADR-003), saldo inicial, estado (`ACTIVO` | `BLOQUEADO`).
+  - `empresas.json` — servicios, empresas (con id), códigos de cliente y deudas (periodo, monto, vencimiento, estado `PENDIENTE` | `PAGADA`).
   - Se carga al iniciar la aplicación; reiniciar el backend restablece el estado inicial (útil para pruebas E2E repetibles).
-- **Atomicidad:** cada operación que modifica saldos (transferencia o pago) se ejecuta dentro de una **sección crítica única** (`SemaphoreSlim(1,1)` global del store):
-  1. Validar todas las reglas (saldo, límites, deuda más antigua, idempotencia) con los datos actuales.
-  2. Calcular el nuevo estado (saldos, operación, deuda pagada).
-  3. Aplicar todos los cambios juntos, sin puntos de fallo intermedios (sin E/S ni llamadas externas dentro de este paso).
-  Si algo falla en los pasos 1–2, no se modifica nada.
-- Una transferencia genera **un registro de operación** visible en el historial de ambos usuarios (enviada para el origen, recibida para el destino).
-- Para facilitar las pruebas se expone un endpoint `POST /api/test/reset` **solo en el entorno `Development`**.
+- **Única fuente de verdad:** saldos, operaciones y **estado de las deudas** viven solo en el `InMemoryStore`, detrás de `IUsuarioRepository`, `IOperacionRepository` e `IDeudaRepository`. El mock de empresas (ADR-006) lee las deudas de `IDeudaRepository`; no guarda una copia propia.
+- **Orden de procesamiento** de una transferencia o pago (`POST /api/transferencias`, `POST /api/pagos`):
+  1. **Fuera del lock:** autenticación JWT, validaciones de formato (ADR-005) y verificación del PIN (ADR-003). El hash PBKDF2 es lento y no debe retener el lock.
+  2. **Dentro de una sección crítica única** (`SemaphoreSlim(1,1)` global del store):
+     1. Buscar la `Idempotency-Key` (ADR-004); si ya existe una operación exitosa con ella, devolver su respuesta y terminar.
+     2. Validar todas las reglas de negocio con los datos actuales (saldo, límites, destinatario activo, deuda pendiente y más antigua).
+     3. Calcular el nuevo estado (saldos, operación, deuda pagada, clave de idempotencia).
+     4. Aplicar todos los cambios juntos, sin E/S, sin `await` y sin llamadas externas en este paso.
+  Si algo falla antes del paso 2.4, no se modifica nada.
+- Una transferencia genera **un registro de operación** visible en el historial de ambos usuarios (enviada para el origen, recibida para el destino). El registro guarda **el saldo resultante de cada parte por separado** (`saldoResultanteOrigen`, `saldoResultanteDestino`), y cada usuario solo ve el suyo en el comprobante: el destinatario nunca ve el saldo del que envía.
+- Para facilitar las pruebas se expone un endpoint `POST /api/test/reset` **solo en el entorno `Development`**. Restablece todo el estado en memoria: saldos, operaciones, deudas, contadores de bloqueo, sesiones revocadas, claves de idempotencia y comportamiento del mock de empresas.
 
 ## Alternativas consideradas
 
